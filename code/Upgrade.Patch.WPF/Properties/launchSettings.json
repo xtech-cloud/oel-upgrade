@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Upgrade.WPF": {
+      "commandName": "Project",
+      "commandLineArgs": "--patch-repository=http://localhost/test.json --patch-version=1.0.0 --patch-target=d:/mytest  --program-path=d:/mytest/OGM.exe --program-workdir=d:/mytest",
+      "workingDirectory": "D:\\SyncDriver\\_Runpath\\upgrade\\"
+    }
+  }
+}
