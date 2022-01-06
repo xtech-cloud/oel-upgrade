@@ -66,14 +66,24 @@ namespace XTC.oelUpgrade
         public void PullRpository(Args _args, Action<Repository> _onSuccess, Action<string> _onFailure)
         {
             args = _args;
-            cacheDir = Path.Combine(args.targetDir, ".upgrade");
-            cacheDir = Path.Combine(cacheDir, "update");
 
             pullRepository(_args.repository, _onSuccess, _onFailure);
         }
 
+        public int CompareFiles(Repository _repository)
+        {
+            cacheDir = Path.Combine(args.targetDir, ".upgrade");
+            cacheDir = Path.Combine(cacheDir, "update");
+            var tasks = generateTask(_repository);
+            return tasks.Count;
+        }
+
+
         public void Upgrade(Repository _repository)
         {
+            cacheDir = Path.Combine(args.targetDir, ".upgrade");
+            cacheDir = Path.Combine(cacheDir, "update");
+
             downloadMgr = new DownloaderManager();
             downloadMgr.onFinish = this.onDownloadFinish;
             downloadMgr.onError = this.onDownloadError;
