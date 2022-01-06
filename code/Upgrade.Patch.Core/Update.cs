@@ -70,12 +70,27 @@ namespace XTC.oelUpgrade
             pullRepository(_args.repository, _onSuccess, _onFailure);
         }
 
-        public int CompareFiles(Repository _repository)
+        public bool Match(Repository _repository, string _targetDir)
         {
-            cacheDir = Path.Combine(args.targetDir, ".upgrade");
+            cacheDir = Path.Combine(_targetDir, ".upgrade");
             cacheDir = Path.Combine(cacheDir, "update");
-            var tasks = generateTask(_repository);
-            return tasks.Count;
+            if (!Directory.Exists(cacheDir))
+                return false;
+
+
+            foreach (var entry in _repository.entry)
+            {
+                string target_file = Path.Combine(_targetDir, entry.file);
+                string md5_file = Path.Combine(cacheDir, entry.file + ".md5");
+                if (!File.Exists(target_file))
+                    return false;
+                if (!File.Exists(md5_file))
+                    return false;
+                string local_md5 = File.ReadAllText(md5_file);
+                if (!entry.md5.Equals(local_md5))
+                    return false;
+            }
+            return true;
         }
 
 
@@ -91,8 +106,8 @@ namespace XTC.oelUpgrade
             downloadMgr.onUpdate = (_finish, _total) => { };
             downloadMgr.onTaskSuccess = (_task) =>
             {
-                // 保存MD5值
-                string md5;
+                    // 保存MD5值
+                    string md5;
                 _task.metadata.TryGetValue("md5", out md5);
                 if (string.IsNullOrEmpty(md5))
                     return;
