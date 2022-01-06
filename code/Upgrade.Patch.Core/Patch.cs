@@ -105,7 +105,6 @@ namespace XTC.oelUpgrade
             task["url"] = _repository.url;
             tasks.Add(task);
             Downloader.Options options = new Downloader.Options();
-            options.generateMd5File = false;
             downloadMgr.DownloadAsync(tasks, options);
         }
 
@@ -113,6 +112,7 @@ namespace XTC.oelUpgrade
         private async void pullRepository(string _url, Action<Repository> _onSuccess, Action<string> _onFailure)
         {
             Repository repository = null;
+            string error = null;
             try
             {
                 HttpWebRequest request = WebRequest.Create(_url) as HttpWebRequest;
@@ -127,15 +127,22 @@ namespace XTC.oelUpgrade
                 {
                     repository = JsonSerializer.Deserialize<Repository>(content);
                 }
+
             }
             catch (Exception ex)
             {
-                if (null != _onFailure)
-                    _onFailure(ex.Message);
+                error = ex.Message;
             }
-
-            if (null != _onSuccess)
-                _onSuccess(repository);
+            if (string.IsNullOrEmpty(error))
+            {
+                if (null != _onSuccess)
+                    _onSuccess(repository);
+            }
+            else
+            {
+                if (null != _onFailure)
+                    _onFailure(error);
+            }
         }
 
         private void onDownloadFinish()

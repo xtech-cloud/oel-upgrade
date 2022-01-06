@@ -79,10 +79,6 @@ namespace XTC.oelUpgrade
     {
         public class Options
         {
-            /// <summary>
-            /// 生成md5文件
-            /// </summary>
-            public bool generateMd5File { get; set; }
         }
 
         public class Task
@@ -90,9 +86,10 @@ namespace XTC.oelUpgrade
             public string filepath { get; set; }
             public string url { get; set; }
             public bool finish { get; set; }
-            public string format { get; set; }
             public string error { get; set; }
             public Options options { get; set; }
+
+            public Dictionary<string, string> metadata = new Dictionary<string, string>();
         }
 
         public Action<Task> onSuccess;
@@ -172,11 +169,6 @@ namespace XTC.oelUpgrade
                 return;
             }
 
-            //保存文件md5
-            if (task_.options.generateMd5File)
-            {
-                //File.WriteAllText(task_.filepath + ".md5", task_.url);
-            }
             try
             {
                 File.Move(task_.filepath + ".tmp", task_.filepath, true);
@@ -208,6 +200,8 @@ namespace XTC.oelUpgrade
         public Action<string> onError;
         public Action<int, int> onUpdate;
         public Action<float, string> onStatus;
+        public Action<Downloader.Task> onTaskSuccess;
+        public Action<Downloader.Task> onTaskFailure;
 
         private Queue<Downloader.Task> tasks_;
         private Queue<Downloader.Task> retryTasks_;
@@ -224,6 +218,12 @@ namespace XTC.oelUpgrade
                 task.options = _options;
                 task.filepath = e["saveas"];
                 task.url = e["url"];
+                if (e.ContainsKey("meta.md5"))
+                    task.metadata["md5"] = e["meta.md5"];
+                if (e.ContainsKey("meta.file"))
+                    task.metadata["file"] = e["meta.file"];
+                if (e.ContainsKey("meta.size"))
+                    task.metadata["size"] = e["meta.size"];
                 tasks_.Enqueue(task);
             }
             total_ = tasks_.Count;
@@ -258,12 +258,15 @@ namespace XTC.oelUpgrade
                      retryTasks_.Enqueue(_task);
                  }
                  onUpdate(finished_, total_);
+                 if (null != onTaskSuccess)
+                     onTaskSuccess(_task);
                  downloadSingle();
              };
             downloader.onUpdate = (_progress, _status) =>
             {
                 onStatus(_progress, _status);
             };
+            downloader.onFailure = this.onTaskFailure;
             downloader.Download(task);
         }
     }
