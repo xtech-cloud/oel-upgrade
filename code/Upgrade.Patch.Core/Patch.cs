@@ -115,6 +115,7 @@ namespace XTC.oelUpgrade
             try
             {
                 HttpWebRequest request = WebRequest.Create(_url) as HttpWebRequest;
+                request.Timeout = 5000;
                 HttpWebResponse response = (await request.GetResponseAsync()) as HttpWebResponse;
                 string content;
                 using (Stream stream = response.GetResponseStream())

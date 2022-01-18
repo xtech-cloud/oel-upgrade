@@ -63,7 +63,7 @@ namespace Upgrade.WPF
             patcher.onFailure = (_err) =>
             {
                 tbStatus.Text = "";
-                tbTip.Text = _err; 
+                tbTip.Text = _err;
                 runApp();
             };
             updater.onStatus = (_progress, _tip) =>
@@ -80,7 +80,7 @@ namespace Upgrade.WPF
             updater.onFailure = (_err) =>
             {
                 tbStatus.Text = "";
-                tbTip.Text = _err; 
+                tbTip.Text = _err;
                 runApp();
             };
             InitializeComponent();
@@ -198,8 +198,7 @@ namespace Upgrade.WPF
             {
                 tbTip.Text = _error;
                 tbStatus.Text = "";
-                //启动应用程序
-                runApp();
+                update();
             });
         }
 
