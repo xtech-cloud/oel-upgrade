@@ -18,6 +18,19 @@ using XTC.oelUpgrade;
 
 namespace Upgrade.WPF
 {
+    public class JsonConvert : IJsonConvert
+    {
+        public T FromJson<T>(string _json)
+        {
+            return System.Text.Json.JsonSerializer.Deserialize<T>(_json);
+        }
+
+        public string ToJson<T>(T _object)
+        {
+            return System.Text.Json.JsonSerializer.Serialize<T>(_object);
+        }
+    }
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -33,6 +46,7 @@ namespace Upgrade.WPF
         private string programWorkDir = "";
         public MainWindow()
         {
+            JsonUtility.convert = new JsonConvert();
             patcher = new Patch();
             updater = new Update();
             patcher.onStatus = (_progress, _tip) =>
@@ -118,6 +132,7 @@ namespace Upgrade.WPF
 
         public void RunWithConfig()
         {
+            /*
             patchArgs["repository"] = "http://localhost/patch.json";
             patchArgs["version"] = "1.0.0";
             patchArgs["target"] = "D:/tmp";
@@ -126,6 +141,7 @@ namespace Upgrade.WPF
             programPath = "d:/mytest/OGM.exe";
             programWorkDir = "d:/mytest";
             patch();
+            */
         }
 
         private void loadImage()

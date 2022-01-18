@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Text.Json;
-using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -20,7 +18,8 @@ namespace XTC.oelUpgrade
 
         public class Entry
         {
-            public string file { get; set; }
+            public string filepath { get; set; }
+            public string uname { get; set; }
             public string md5 { get; set; }
             public long size { get; set; }
         }
@@ -80,8 +79,8 @@ namespace XTC.oelUpgrade
 
             foreach (var entry in _repository.entry)
             {
-                string target_file = Path.Combine(_targetDir, entry.file);
-                string md5_file = Path.Combine(cacheDir, entry.file + ".md5");
+                string target_file = Path.Combine(_targetDir, entry.filepath);
+                string md5_file = Path.Combine(cacheDir, entry.filepath + ".md5");
                 if (!File.Exists(target_file))
                     return false;
                 if (!File.Exists(md5_file))
@@ -151,7 +150,7 @@ namespace XTC.oelUpgrade
 
                 if (!string.IsNullOrEmpty(content))
                 {
-                    repository = JsonSerializer.Deserialize<Repository>(content);
+                    repository = JsonUtility.FromJson<Repository>(content);
                 }
             }
             catch (Exception ex)
@@ -194,8 +193,8 @@ namespace XTC.oelUpgrade
             foreach (var entry in _repository.entry)
             {
                 var task = new Dictionary<string, string>();
-                string target_file = Path.Combine(args.targetDir, entry.file);
-                string md5_file = Path.Combine(cacheDir, entry.file + ".md5");
+                string target_file = Path.Combine(args.targetDir, entry.filepath);
+                string md5_file = Path.Combine(cacheDir, entry.filepath + ".md5");
                 string local_md5 = "";
                 // 仅当本地MD5文件存在且匹配时不需要下载
                 if (File.Exists(target_file))
@@ -221,11 +220,11 @@ namespace XTC.oelUpgrade
                         continue;
                 }
 
-                task["saveas"] = Path.Combine(args.targetDir, entry.file);
-                task["url"] = string.Format("{0}/{1}", _repository.host, entry.file.Replace("\\", "/"));
+                task["saveas"] = Path.Combine(args.targetDir, entry.filepath);
+                task["url"] = string.Format("{0}/{1}", _repository.host, entry.uname.Replace("\\", "/"));
                 task["md5"] = entry.md5;
                 task["meta.md5"] = entry.md5;
-                task["meta.file"] = entry.file;
+                task["meta.file"] = entry.filepath;
                 task["meta.size"] = entry.size.ToString();
                 tasks.Add(task);
             }

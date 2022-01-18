@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Text.Json;
 using System.IO.Compression;
 
 namespace XTC.oelUpgrade
@@ -125,7 +124,7 @@ namespace XTC.oelUpgrade
 
                 if (!string.IsNullOrEmpty(content))
                 {
-                    repository = JsonSerializer.Deserialize<Repository>(content);
+                    repository = JsonUtility.FromJson<Repository>(content);
                 }
 
             }

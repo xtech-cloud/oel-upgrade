@@ -11,7 +11,8 @@ namespace Upgrade.Tools
     {
         public class Entry
         {
-            public string file { get; set; }
+            public string filepath { get; set; }
+            public string uname { get; set; }
             public string md5 { get; set; }
             public long size { get; set; }
         }
@@ -31,7 +32,8 @@ namespace Upgrade.Tools
             {
                 FileInfo fi = new FileInfo(file);
                 Entry entry = new Entry();
-                entry.file = Path.GetRelativePath(_targetDir, file);
+                entry.filepath = Path.GetRelativePath(_targetDir, file);
+                entry.uname = entry.filepath;
                 entry.size = fi.Length;
                 entry.md5 = getFileMD5(file);
                 repository.entry.Add(entry);
