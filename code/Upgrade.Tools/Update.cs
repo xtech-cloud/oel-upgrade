@@ -11,9 +11,9 @@ namespace Upgrade.Tools
     {
         public class Entry
         {
-            public string filepath { get; set; }
-            public string uname { get; set; }
-            public string md5 { get; set; }
+            public string path { get; set; }
+            public string hash { get; set; }
+            public string url { get; set; }
             public long size { get; set; }
         }
 
@@ -21,21 +21,25 @@ namespace Upgrade.Tools
         {
             public List<Entry> entry { get; set; }
             public string strategy { get; set; }
+            public string host { get; set; }
+            public string key { get; set; }
         }
 
         public void GenerateRepository(string _targetDir)
         {
             Repository repository = new Repository();
             repository.strategy = "Auto";
+            repository.host = "";
+            repository.key = "path";
             repository.entry = new List<Entry>();
             foreach (var file in Directory.GetFiles(_targetDir, "*", SearchOption.AllDirectories))
             {
                 FileInfo fi = new FileInfo(file);
                 Entry entry = new Entry();
-                entry.filepath = Path.GetRelativePath(_targetDir, file);
-                entry.uname = entry.filepath;
+                entry.path = Path.GetRelativePath(_targetDir, file);
                 entry.size = fi.Length;
-                entry.md5 = getFileMD5(file);
+                entry.hash = getFileMD5(file);
+                entry.url = "";
                 repository.entry.Add(entry);
             }
 

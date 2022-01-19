@@ -18,9 +18,9 @@ namespace XTC.oelUpgrade
 
         public class Entry
         {
-            public string filepath { get; set; }
-            public string uname { get; set; }
-            public string md5 { get; set; }
+            public string path { get; set; }
+            public string hash { get; set; }
+            public string url { get; set; }
             public long size { get; set; }
         }
 
@@ -29,6 +29,7 @@ namespace XTC.oelUpgrade
             public Entry[] entry { get; set; }
             public string strategy { get; set; }
             public string host { get; set; }
+            public string key { get; set; }
         }
 
         public class Args
@@ -79,14 +80,14 @@ namespace XTC.oelUpgrade
 
             foreach (var entry in _repository.entry)
             {
-                string target_file = Path.Combine(_targetDir, entry.filepath);
-                string md5_file = Path.Combine(cacheDir, entry.filepath + ".md5");
+                string target_file = Path.Combine(_targetDir, entry.path);
+                string md5_file = Path.Combine(cacheDir, entry.path + ".md5");
                 if (!File.Exists(target_file))
                     return false;
                 if (!File.Exists(md5_file))
                     return false;
                 string local_md5 = File.ReadAllText(md5_file);
-                if (!entry.md5.Equals(local_md5))
+                if (!entry.hash.Equals(local_md5))
                     return false;
             }
             return true;
@@ -105,8 +106,8 @@ namespace XTC.oelUpgrade
             downloadMgr.onUpdate = (_finish, _total) => { };
             downloadMgr.onTaskSuccess = (_task) =>
             {
-                    // 保存MD5值
-                    string md5;
+                // 保存MD5值
+                string md5;
                 _task.metadata.TryGetValue("md5", out md5);
                 if (string.IsNullOrEmpty(md5))
                     return;
@@ -193,8 +194,8 @@ namespace XTC.oelUpgrade
             foreach (var entry in _repository.entry)
             {
                 var task = new Dictionary<string, string>();
-                string target_file = Path.Combine(args.targetDir, entry.filepath);
-                string md5_file = Path.Combine(cacheDir, entry.filepath + ".md5");
+                string target_file = Path.Combine(args.targetDir, entry.path);
+                string md5_file = Path.Combine(cacheDir, entry.path + ".md5");
                 string local_md5 = "";
                 // 仅当本地MD5文件存在且匹配时不需要下载
                 if (File.Exists(target_file))
@@ -202,7 +203,7 @@ namespace XTC.oelUpgrade
                     if (File.Exists(md5_file))
                     {
                         local_md5 = File.ReadAllText(md5_file);
-                        if (local_md5.Equals(entry.md5))
+                        if (local_md5.Equals(entry.hash))
                         {
                             continue;
                         }
@@ -216,15 +217,21 @@ namespace XTC.oelUpgrade
                     if (!Directory.Exists(dir))
                         Directory.CreateDirectory(dir);
                     File.WriteAllText(md5_file, local_md5);
-                    if (local_md5.Equals(entry.md5))
+                    if (local_md5.Equals(entry.hash))
                         continue;
                 }
 
-                task["saveas"] = Path.Combine(args.targetDir, entry.filepath);
-                task["url"] = string.Format("{0}/{1}", _repository.host, entry.uname.Replace("\\", "/"));
-                task["md5"] = entry.md5;
-                task["meta.md5"] = entry.md5;
-                task["meta.file"] = entry.filepath;
+                string uname = entry.path;
+                if (_repository.key.Equals("hash"))
+                    uname = entry.hash;
+                string url = entry.url;
+                if (string.IsNullOrEmpty(url))
+                    url = string.Format("{0}/{1}", _repository.host, Uri.EscapeUriString(uname));
+                task["saveas"] = Path.Combine(args.targetDir, entry.path);
+                task["url"] = url;
+                task["md5"] = entry.hash;
+                task["meta.md5"] = entry.hash;
+                task["meta.file"] = entry.path;
                 task["meta.size"] = entry.size.ToString();
                 tasks.Add(task);
             }
